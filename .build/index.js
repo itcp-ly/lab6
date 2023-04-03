@@ -57,17 +57,51 @@ const createArticle = async (ctx, next) => {
   ctx.body = newArticle;
   await next();
 };
-const updateArticle = async (ctx, next) => {
-};
-const deleteArticle = async (ctx, next) => {
-};
+async function updateArticle(ctx, next) {
+  try {
+    const id = parseInt(ctx.params.id);
+    const articleIndex = id - 1;
+    if (articleIndex >= 0 && articleIndex < articles.length) {
+      let { title = "", fullText = "" } = ctx.request.body;
+      articles[articleIndex].title = title;
+      articles[articleIndex].fullText = fullText;
+      ctx.status = 200;
+      ctx.body = articles[articleIndex];
+    } else {
+      ctx.status = 404;
+      ctx.body = { error: "Article not found" };
+    }
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: "Internal server error" + err + ctx.request.body };
+  }
+  await next();
+}
+async function deleteArticle(ctx, next) {
+  try {
+    const id = parseInt(ctx.params.id);
+    const articleIndex = id - 1;
+    if (articleIndex >= 0 && articleIndex < articles.length) {
+      articles.splice(articleIndex, 1);
+      ctx.status = 204;
+    } else {
+      ctx.status = 404;
+      ctx.body = { error: "Article not found" };
+    }
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: "Internal server error" };
+  }
+  await next();
+}
+app.use((0, import_koa_bodyparser.default)());
+app.use((0, import_koa_logger.default)());
+app.use((0, import_koa_json.default)());
+app.use(router.routes());
 router.get("/", getAll);
 router.post("/", (0, import_koa_bodyparser.default)(), createArticle);
 router.get("/:id([0-9]{1,})", getById);
 router.put("/:id([0-9]{1,})", updateArticle);
 router.del("/:id([0-9]{1,})", deleteArticle);
-app.use((0, import_koa_logger.default)());
-app.use((0, import_koa_json.default)());
-app.use(router.routes());
 app.listen(10888);
 //# sourceMappingURL=index.js.map
